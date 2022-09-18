@@ -19,7 +19,6 @@ package cmd
 
 import (
 	"errors"
-	"flag"
 	"fmt"
 	"os"
 )
@@ -32,64 +31,22 @@ const (
 // CommandRunner accepts a set of commands that form the CLI interface
 type CommandRunner interface {
 	Init([]string) error
+	PrintDefaults()
 	Run() error
 	Name() string
 }
 
-// HelpCommand provides the interface to the help information
-type HelpCommand struct {
-	fs *flag.FlagSet
-
-	name string
-}
-
-func (h *HelpCommand) Init(args []string) error {
-	return h.fs.Parse(args)
-}
-
-func (h *HelpCommand) Name() string {
-	return h.fs.Name()
-}
-
-func (h *HelpCommand) Run() error {
-	return nil
-}
-
-// NewHelpCommand creates the HelpCommand FlagSet
-func NewHelpCommand() *HelpCommand {
-	h := &HelpCommand{
-		fs: flag.NewFlagSet("help", flag.ExitOnError),
+func needsHelp(s string) bool {
+	switch s {
+	case "help", "-h", "--help", "-help":
+		return true
 	}
 
-	return h
+	return false
 }
 
-// ServerCommand provides the interface to the server functionality
-type ServerCommand struct {
-	fs *flag.FlagSet
-
-	name string
-}
-
-func (s *ServerCommand) Init(args []string) error {
-	return s.fs.Parse(args)
-}
-
-func (s *ServerCommand) Name() string {
-	return s.fs.Name()
-}
-
-func (s *ServerCommand) Run() error {
-	return nil
-}
-
-// NewServerCommand creates the ServerCommand FlagSet
-func NewServerCommand() *ServerCommand {
-	s := &ServerCommand{
-		fs: flag.NewFlagSet("server", flag.ContinueOnError),
-	}
-
-	return s
+func getCmdArgs() []string {
+	return os.Args[2:]
 }
 
 func Execute(args []string) error {
@@ -97,15 +54,24 @@ func Execute(args []string) error {
 		return errors.New(errNoArgs)
 	}
 
+	help := NewHelpCommand()
 	commands := []CommandRunner{
+		NewInvoiceCommand(),
 		NewServerCommand(),
 	}
 
+	help.cmdList = commands
+	commands = append(commands, help)
 	subcommand := os.Args[1]
+
+	if needsHelp(subcommand) {
+		help.Init(getCmdArgs())
+		return help.Run()
+	}
 
 	for _, cmd := range commands {
 		if cmd.Name() == subcommand {
-			cmd.Init(os.Args[2:])
+			cmd.Init(getCmdArgs())
 			return cmd.Run()
 		}
 	}
