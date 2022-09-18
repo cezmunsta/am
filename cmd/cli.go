@@ -31,9 +31,10 @@ const (
 // CommandRunner accepts a set of commands that form the CLI interface
 type CommandRunner interface {
 	Init([]string) error
+	Name() string
 	PrintDefaults()
 	Run() error
-	Name() string
+	SubCommands() []CommandRunner
 }
 
 func needsHelp(s string) bool {

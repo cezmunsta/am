@@ -42,6 +42,10 @@ func (s *ServerCommand) Run() error {
 	return nil
 }
 
+func (s *ServerCommand) SubCommands() []CommandRunner {
+	return []CommandRunner{}
+}
+
 // NewServerCommand creates the ServerCommand FlagSet
 func NewServerCommand() *ServerCommand {
 	s := &ServerCommand{

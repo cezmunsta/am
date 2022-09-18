@@ -60,11 +60,20 @@ func (h *HelpCommand) Run() error {
 		}
 		if sCmd == "all" || sCmd == cmd.Name() {
 			cmd.PrintDefaults()
+
+			for _, cmd := range cmd.SubCommands() {
+				cmd.PrintDefaults()
+			}
+
 			fmt.Println()
 		}
 	}
 
 	return nil
+}
+
+func (h *HelpCommand) SubCommands() []CommandRunner {
+	return []CommandRunner{}
 }
 
 // NewHelpCommand creates the HelpCommand FlagSet

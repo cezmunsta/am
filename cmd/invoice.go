@@ -21,7 +21,8 @@ import "flag"
 
 // InvoiceCommand provides the client interface to invoice management
 type InvoiceCommand struct {
-	fs *flag.FlagSet
+	fs     *flag.FlagSet
+	subCmd map[string]CommandRunner
 
 	name string
 }
@@ -42,10 +43,15 @@ func (i *InvoiceCommand) Run() error {
 	return nil
 }
 
+func (i *InvoiceCommand) SubCommands() []CommandRunner {
+	return []CommandRunner{}
+}
+
 // NewInvoiceCommand creates the InvoiceCommand FlagSet
 func NewInvoiceCommand() *InvoiceCommand {
 	i := &InvoiceCommand{
-		fs: flag.NewFlagSet("invoice", flag.ContinueOnError),
+		fs:     flag.NewFlagSet("invoice", flag.ContinueOnError),
+		subCmd: getDefaultCommands(),
 	}
 
 	return i
